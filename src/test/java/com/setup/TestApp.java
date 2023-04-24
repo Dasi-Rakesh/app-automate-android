@@ -1,5 +1,6 @@
 package com.setup;
 
+import com.browserstack.local.Local;
 import io.appium.java_client.MobileElement;
 import io.appium.java_client.android.AndroidDriver;
 import org.openqa.selenium.JavascriptExecutor;
@@ -8,8 +9,11 @@ import org.testng.ITestResult;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 import java.net.URL;
+import java.util.HashMap;
+
 public class TestApp {
     public static AndroidDriver<MobileElement> driver;
+    Local bsLocal;
     static String userName = System.getenv("BROWSERSTACK_USERNAME");
     static String accessKey = System.getenv("BROWSERSTACK_ACCESS_KEY");
     static String browserstackLocal = System.getenv("BROWSERSTACK_LOCAL");
@@ -20,12 +24,21 @@ public class TestApp {
 
     @Test
     public void test_setup() throws Exception {
+        bsLocal = new Local();
+        HashMap<String, String> bsLocalArgs = new HashMap<String, String>();
+        bsLocalArgs.put("key", accessKey);
+        bsLocal.start(bsLocalArgs);
+
+        while(!bsLocal.isRunning()){
+            Thread.sleep(1000);
+        }
+        System.out.println(bsLocal.isRunning());
         DesiredCapabilities caps = new DesiredCapabilities();
         caps.setCapability("app", app);
         caps.setCapability("device", "Samsung Galaxy S8");
         caps.setCapability("build", buildName);
         caps.setCapability("browserstack.local", browserstackLocal);
-        caps.setCapability("browserstack.localIdentifier", browserstackLocalIdentifier);
+       // caps.setCapability("browserstack.localIdentifier", browserstackLocalIdentifier);
         driver = new AndroidDriver<MobileElement>(new URL("https://" + userName + ":" + accessKey + "@" + BROWSERSTACK_HUB_URL + "/wd/hub"),caps);
         Thread.sleep(3000);
     }
@@ -39,6 +52,7 @@ public class TestApp {
         else
             jse.executeScript("browserstack_executor: {\"action\": \"setSessionStatus\", \"arguments\": {\"status\": \"failed\", \"reason\": \"Test Failed\"}}");
         Thread.sleep(3000);
+        bsLocal.stop();
         driver.quit();
     }
 }
