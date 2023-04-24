@@ -1,0 +1,12 @@
+pipeline {
+   agent any
+   stages {
+      stage('setup') {
+         steps {
+            browserstack(credentialsId: '839a1c81-b665-4c85-9042-fab6d2082938') {
+               echo "hello"
+            }
+         }
+      }
+    }
+  }
